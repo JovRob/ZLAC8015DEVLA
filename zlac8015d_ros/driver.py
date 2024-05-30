@@ -93,9 +93,14 @@ class Driver(Node):
         # If we haven't received a command velocity message in the last second, stop the motors
         cur_time = self.get_clock().now()
         if (cur_time - self.last_cmd_vel_time).nanoseconds / 1e9 > 1:
-            self.motors.set_speed(0, 0)
+            self.motors.set_rpm(0, 0)
         else:
-            self.motors.set_speed(*self.left_right_cmd_speed)
+            # Ensure the command speeds are integers
+            try:
+                left_speed, right_speed = map(int, self.left_right_cmd_speed)
+                self.motors.set_rpm(left_speed, right_speed)
+            except ValueError:
+                raise ValueError("Command speeds must be integers.")
 
     def odom_calc_callback(self):
         cur_time = self.get_clock().now()
@@ -153,3 +158,4 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
+
